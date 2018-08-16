@@ -4,7 +4,7 @@
   "description": "",
   "main": "test.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "localSvr": "serve -l 8082"
   },
   "repository": {
     "type": "git",
@@ -13,7 +13,9 @@
   "author": "FantasticFang",
   "license": "ISC",
   "homepage": "https://github.com/FantasticFang/3D-visualized#readme",
-  "dependencies": {
-    "eslint": "^5.3.0"
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^5.3.0",
+    "serve": "^9.6.0"
   }
 }
