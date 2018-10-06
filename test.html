@@ -4,17 +4,9 @@
     </head>
     <body>
         <script>
-            var canvas = project3d.getCanvas(1024,1024);
-
-            var style = project3d.DefaultCanvasStyle;
-
-            var sizeArr = [20,24,30,40,45]
-
-            for(var i = 0; i < 50; i++){
-                var size = sizeArr[Math.floor(Math.random()*4)];
-                canvas.drawText('字体排版测试',size);
-            }
+            var app = new project3d.App(document.body);
             
+            app.run();
         </script>
     </body>
 </html>

@@ -26,7 +26,7 @@ if (env === 'release') {
 
 module.exports = {
     mode: 'development',
-    entry: './src/test.js',
+    entry: './src/index.js',
 
     output: {
         filename: outputFile,

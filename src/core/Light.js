@@ -1,7 +1,7 @@
 import { AmbientLight, DirectionalLight, Vector3 } from 'three';
 
 class Light {
-    constructor(scene, dirLightConfig = {}) {
+    constructor(scene, dirLightConfig) {
         let color = 0xfffff;
         let intensity = 1;
 
@@ -12,8 +12,8 @@ class Light {
         let pos = new Vector3(0, 100, 0);
         let targetPos = new Vector3(0, 0, 0);
         if (dirLightConfig) {
-            pos.fromArray(dirLightConfig.pos);
-            pos.fromArray(dirLightConfig.targetPos);
+            pos.copy(dirLightConfig.pos);
+            targetPos.copy(dirLightConfig.targetPos);
         }
 
         this.directionalLight = this._createDirectionalLight(color, intensity, pos, targetPos);

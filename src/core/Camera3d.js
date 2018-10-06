@@ -16,6 +16,12 @@ class Camera3D {
 
         this.camera.updateProjectionMatrix();
     }
+
+    setAttribute(pos, targetPos) {
+        this.camera.position.copy(pos);
+
+        this.camera.lookAt(targetPos);
+    }
 }
 
 export { Camera3D };
