@@ -1,2 +1,3 @@
-### 字体排版算法，用于UI场景中的注记显示
-* 用于提交相关
+### draw many fonts on one canvas
+
+* This is an example about how to draw many different sizes fonts on one canvas, so that we can just use one canvas as many sprites' texture by setting different UVs
