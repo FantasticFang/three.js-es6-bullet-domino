@@ -1,12 +1,19 @@
 <html>
     <head>
-        <script src="dist/project3d.js"></script> 
+        <script src="dist/project3d.js"></script>
+        <style>
+            .mapBox{
+                width:100vw;
+                height: 100vh;
+                overflow: hidden;
+            }
+        </style>
     </head>
     
     <body>
-        <div id= 'map'></div>
+        <div id= 'map' class="mapBox"></div>
         <script>
-            var app = new project3d.App(document.body);
+            var app = new project3d.App(document.getElementById('map'));
             app.run();
         </script>
     </body>
