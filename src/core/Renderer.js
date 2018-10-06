@@ -6,6 +6,11 @@ class Renderer {
             antialias: true
         });
 
+        this.resize(dom.clientWidth, dom.clientHeight);
+
+        this.renderer.autoClear = false;
+        this.renderer.setClearColor('#000000');
+
         dom.appendChild(this.renderer.domElement);
     }
 

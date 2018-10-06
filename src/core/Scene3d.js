@@ -1,4 +1,4 @@
-import { Scene, PlaneBufferGeometry, MeshBasicMaterial, Mesh, Vector3 } from 'three';
+import { Scene, PlaneBufferGeometry, MeshBasicMaterial, Mesh, Vector3, BoxGeometry, DoubleSide } from 'three';
 import { Camera3D } from './Camera3d';
 import { Light } from './Light';
 
@@ -18,12 +18,20 @@ class Scene3D {
     }
 
     _test() {
-        let geo = new PlaneBufferGeometry(1000, 1000);
-        let mat = new MeshBasicMaterial({ color: 0xff0000 });
+        let geo = new PlaneBufferGeometry(1000, 1000, 1, 1);
+        let mat = new MeshBasicMaterial({ color: 0x550005, side: DoubleSide });
 
         let mesh = new Mesh(geo, mat);
+        mesh.rotation.x = Math.PI / 2;
         mesh.name = 'test';
         this.scene.add(mesh);
+
+        let geo2 = new BoxGeometry(5, 5, 5);
+        let mat2 = new MeshBasicMaterial({ color: 0xffff00 });
+
+        let mesh2 = new Mesh(geo2, mat2);
+        mesh2.name = 'test2';
+        this.scene.add(mesh2);
     }
 
     get camera() {

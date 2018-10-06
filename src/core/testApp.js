@@ -15,6 +15,7 @@ class App {
     _frameLoop() {
         this.appRenderer.renderer.render(this.appScene.scene, this.appScene.camera);
 
+        // use ES6 or bind to change this pointer
         requestAnimationFrame(() => {
             this._frameLoop();
         });
