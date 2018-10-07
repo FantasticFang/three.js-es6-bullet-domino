@@ -3,12 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "test.js",
-  
   "config": {
     "webpack_env": "dev",
     "webpack_env_devServer": false
   },
-
   "scripts": {
     "lint": "eslint src",
     "lintfix": "eslint src --fix",

@@ -20,7 +20,8 @@ module.exports = {
         'IsFloat32Array': false,
         'isArrayBuffer': false,
         'clamp01': false,
-        'msgpack': false
+        'msgpack': false,
+        'Ammo':false
     },
     rules: {
         // 这里填入你的项目需要的个性化配置，比如：
