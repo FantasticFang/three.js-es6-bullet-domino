@@ -1,7 +1,7 @@
 const path = require('path');
-// const webpack = require('webpack');
+const webpack = require('webpack');
 const env = process.env.npm_package_config_webpack_env;
-// const hot = process.env.npm_package_config_webpack_env_devServer;
+const hot = process.env.npm_package_config_webpack_env_devServer;
 const libraryName = 'project3d';
 
 // 向上一级得到项目的根目录
@@ -13,9 +13,12 @@ function resolve(folder) {
 let outputFile = '';
 let plugins = [];
 let minimize = false;
+let isDev = true;
 
 if (env === 'release') {
+    isDev = false;
     minimize = true;
+    plugins.push(new webpack.optimize.UglifyJsPlugin({ minimize: true }));
     outputFile = libraryName + '.min.js';
 } else {
     // this will be included automatically when enable inline property of devServer
@@ -90,3 +93,22 @@ module.exports = {
 
     plugins: plugins
 };
+
+// check document: https://webpack.js.org/configuration/dev-server/
+if (hot) {
+    module.exports['devServer'] = {
+        contentBase: './',
+        publicPath: '/dist/', // Make sure publicPath always starts and ends with a forward slash.
+        inline: true,
+        hot: true,
+        stats: 'errors-only', // normal, minimal, errors-only
+        overlay: true,
+        clientLogLevel: 'info',
+        open: 'chrome',
+        openPage: 'test.html'
+    };
+}
+
+if (isDev) {
+    module.exports['devtool'] = 'source-map';
+}
