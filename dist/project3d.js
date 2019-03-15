@@ -49313,7 +49313,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
                 function Light(scene, dirLightConfig) {
                         (0, _classCallCheck3.default)(this, Light);
 
-                        var color = 0xfffff;
+                        var color = 0xffffff;
                         var intensity = 1;
 
                         this.ambientLight = new _three.AmbientLight(color, intensity);
@@ -49458,12 +49458,12 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
     if (true) {
-        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(/*! babel-runtime/helpers/classCallCheck */ "./node_modules/babel-runtime/helpers/classCallCheck.js"), __webpack_require__(/*! babel-runtime/helpers/createClass */ "./node_modules/babel-runtime/helpers/createClass.js"), __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js"), __webpack_require__(/*! ./Camera3d */ "./src/core/Camera3d.js"), __webpack_require__(/*! ./Light */ "./src/core/Light.js")], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(/*! babel-runtime/helpers/classCallCheck */ "./node_modules/babel-runtime/helpers/classCallCheck.js"), __webpack_require__(/*! babel-runtime/helpers/createClass */ "./node_modules/babel-runtime/helpers/createClass.js"), __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js"), __webpack_require__(/*! ./Camera3d */ "./src/core/Camera3d.js"), __webpack_require__(/*! ./Light */ "./src/core/Light.js"), __webpack_require__(/*! ../physics/PhysicsWorld */ "./src/physics/PhysicsWorld.js")], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
     } else { var mod; }
-})(this, function (exports, _classCallCheck2, _createClass2, _three, _Camera3d, _Light) {
+})(this, function (exports, _classCallCheck2, _createClass2, _three, _Camera3d, _Light, _PhysicsWorld) {
     'use strict';
 
     Object.defineProperty(exports, "__esModule", {
@@ -49487,6 +49487,11 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
             this.scene = new _three.Scene();
 
+            this._camera = null;
+            this._light = null;
+
+            this._world = null;
+
             this._initlize();
             this._test();
         }
@@ -49496,8 +49501,10 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
             value: function _initlize() {
                 this._light = new _Light.Light(this.scene);
 
+                this._world = new _PhysicsWorld.PhysicsWorld();
+
                 this._camera = new _Camera3d.Camera3D('camera3d', 45, window.innerWidth / window.innerHeight);
-                this._camera.setAttribute(new _three.Vector3(100, 100, 0), new _three.Vector3(0, 0, 0));
+                this._camera.setAttribute(new _three.Vector3(20, 20, 0), new _three.Vector3(0, 0, 0));
                 this.scene.add(this.camera);
             }
         }, {
@@ -49508,20 +49515,44 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
                 map.wrapT = _three.RepeatWrapping;
                 map.repeat.set(40, 40);
 
-                var geo = new _three.PlaneBufferGeometry(500, 500, 1, 1);
-                var mat = new _three.MeshBasicMaterial({
-                    side: _three.DoubleSide,
-                    map: map
-                });
+                var pos = new _three.Vector3();
+                var quat = new _three.Quaternion();
 
-                var mesh = new _three.Mesh(geo, mat);
-                mesh.rotation.x = Math.PI / 2;
-                mesh.name = 'test';
-                this.scene.add(mesh);
+                // 创建地面
+                pos.set(0, -0.5, 0);
+                quat.set(0, 0, 0, 1);
+                var ground = this._world.createTmpObj(400, 1, 400, 0, pos, quat, new _three.MeshBasicMaterial());
+                ground.castShadow = true;
+                ground.receiveShadow = true;
+                ground.material.map = map;
+
+                this.scene.add(ground);
+
+                function createRendomColorObjectMeatrial() {
+                    var color = Math.floor(Math.random() * (1 << 24));
+                    return new _three.MeshPhongMaterial({ color: color });
+                }
+
+                var mesh = void 0;
+                // 随机创建30个箱子
+                for (var i = 0; i < 30; i++) {
+                    pos.set(Math.random(), 2 * i, Math.random());
+                    quat.set(0, 0, 0, 1);
+
+                    mesh = this._world.createTmpObj(1, 1, 1, 0.5, pos, quat, createRendomColorObjectMeatrial());
+                    this.scene.add(mesh);
+                }
             }
         }, {
             key: 'update',
-            value: function update(deltaTime) {}
+            value: function update(deltaTime) {
+                this._world.update(deltaTime);
+            }
+        }, {
+            key: 'camera3D',
+            get: function get() {
+                return this._camera;
+            }
         }, {
             key: 'camera',
             get: function get() {
@@ -49545,12 +49576,12 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
     if (true) {
-        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(/*! babel-runtime/helpers/classCallCheck */ "./node_modules/babel-runtime/helpers/classCallCheck.js"), __webpack_require__(/*! babel-runtime/helpers/createClass */ "./node_modules/babel-runtime/helpers/createClass.js"), __webpack_require__(/*! ./Scene3d */ "./src/core/Scene3d.js"), __webpack_require__(/*! ./Renderer */ "./src/core/Renderer.js"), __webpack_require__(/*! ./Controller */ "./src/core/Controller.js")], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(/*! babel-runtime/helpers/classCallCheck */ "./node_modules/babel-runtime/helpers/classCallCheck.js"), __webpack_require__(/*! babel-runtime/helpers/createClass */ "./node_modules/babel-runtime/helpers/createClass.js"), __webpack_require__(/*! ./Scene3d */ "./src/core/Scene3d.js"), __webpack_require__(/*! ./Renderer */ "./src/core/Renderer.js"), __webpack_require__(/*! ./Controller */ "./src/core/Controller.js"), __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js")], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
     } else { var mod; }
-})(this, function (exports, _classCallCheck2, _createClass2, _Scene3d, _Renderer, _Controller) {
+})(this, function (exports, _classCallCheck2, _createClass2, _Scene3d, _Renderer, _Controller, _three) {
     'use strict';
 
     Object.defineProperty(exports, "__esModule", {
@@ -49568,9 +49599,13 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
         };
     }
 
+    var clock = new _three.Clock();
+
     var App = function () {
         function App(dom) {
             (0, _classCallCheck3.default)(this, App);
+
+            this._dom = dom;
 
             this._lastFrameTime = 0;
 
@@ -49585,22 +49620,40 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
             key: 'run',
             value: function run() {
                 this._frameLoop();
+
+                this._listenCanvasSize();
             }
         }, {
             key: '_frameLoop',
             value: function _frameLoop(time) {
                 var _this = this;
 
-                var deltaTime = time - this._lastFrameTime;
-                this._lastFrameTime = time;
+                var deltaTime = clock.getDelta();
 
-                this._appRenderer.render(this._appScene3D);
                 this._appController.update(deltaTime);
+                this._appScene3D.update(deltaTime);
+                this._appRenderer.render(this._appScene3D);
 
                 // use ES6 or bind to change this pointer
-                requestAnimationFrame(function (time) {
+                requestAnimationFrame(function () {
                     _this._frameLoop(time);
                 });
+            }
+        }, {
+            key: '_listenCanvasSize',
+            value: function _listenCanvasSize() {
+                var scope = this;
+                function canvasChanged() {
+                    var _ref = [scope._dom.clientWidth, scope._dom.clientHeight],
+                        w = _ref[0],
+                        h = _ref[1];
+
+
+                    scope._appScene3D.camera3D.resize(w, h);
+                    scope._appRenderer.resize(w, h);
+                }
+
+                window.addEventListener('resize', canvasChanged, false);
             }
         }]);
         return App;
@@ -49633,6 +49686,142 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
   });
   exports.App = undefined;
   exports.App = _testApp.App;
+});
+
+/***/ }),
+
+/***/ "./src/physics/PhysicsWorld.js":
+/*!*************************************!*\
+  !*** ./src/physics/PhysicsWorld.js ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+    if (true) {
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(/*! babel-runtime/helpers/classCallCheck */ "./node_modules/babel-runtime/helpers/classCallCheck.js"), __webpack_require__(/*! babel-runtime/helpers/createClass */ "./node_modules/babel-runtime/helpers/createClass.js"), __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js")], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+    } else { var mod; }
+})(this, function (exports, _classCallCheck2, _createClass2, _three) {
+    'use strict';
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    exports.PhysicsWorld = undefined;
+
+    var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+    var _createClass3 = _interopRequireDefault(_createClass2);
+
+    function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+            default: obj
+        };
+    }
+
+    var margin = 0.05; /* eslint-disable */
+    /**
+     * 将物理引擎封装成一个物理场景
+     */
+
+    var transformAux1 = new Ammo.btTransform();
+
+    var PhysicsWorld = function () {
+        function PhysicsWorld() {
+            (0, _classCallCheck3.default)(this, PhysicsWorld);
+
+            this._physicsWorld = null;
+
+            this._rigidBodies = []; // put meshs into physics world
+
+            this._initPhysics();
+        }
+
+        (0, _createClass3.default)(PhysicsWorld, [{
+            key: '_initPhysics',
+            value: function _initPhysics() {
+                // bullet config
+                var collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
+                var dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration);
+                var broadphase = new Ammo.btDbvtBroadphase();
+                var solver = new Ammo.btSequentialImpulseConstraintSolver();
+                var gravityConstant = -9.8;
+
+                this._physicsWorld = new Ammo.btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
+                this._physicsWorld.setGravity(new Ammo.btVector3(0, gravityConstant, 0));
+            }
+        }, {
+            key: '_createRigidBody',
+            value: function _createRigidBody(threeObject, physicsShape, mass, pos, quat) {
+                threeObject.position.copy(pos);
+                threeObject.quaternion.copy(quat);
+
+                var transform = new Ammo.btTransform();
+                transform.setIdentity();
+                transform.setOrigin(new Ammo.btVector3(pos.x, pos.y, pos.z));
+                transform.setRotation(new Ammo.btQuaternion(quat.x, quat.y, quat.z, quat.w));
+                var motionState = new Ammo.btDefaultMotionState(transform);
+
+                var localInertia = new Ammo.btVector3(0, 0, 0);
+                physicsShape.calculateLocalInertia(mass, localInertia);
+
+                var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, motionState, physicsShape, localInertia);
+                var body = new Ammo.btRigidBody(rbInfo);
+
+                threeObject.userData.physicsBody = body;
+
+                if (mass > 0) {
+                    this._rigidBodies.push(threeObject);
+
+                    // Disable deactivation
+                    // 防止物体弹力过快消失
+
+                    // Ammo.DISABLE_DEACTIVATION = 4
+                    body.setActivationState(4);
+                }
+
+                this._physicsWorld.addRigidBody(body);
+
+                return body;
+            }
+        }, {
+            key: 'createTmpObj',
+            value: function createTmpObj(sx, sy, sz, mass, pos, quat, material) {
+                var threeObject = new _three.Mesh(new _three.BoxGeometry(sx, sy, sz, 1, 1, 1), material);
+                var shape = new Ammo.btBoxShape(new Ammo.btVector3(sx * 0.5, sy * 0.5, sz * 0.5));
+                shape.setMargin(margin);
+
+                this._createRigidBody(threeObject, shape, mass, pos, quat);
+
+                return threeObject;
+            }
+        }, {
+            key: 'update',
+            value: function update(deltaTime) {
+                this._physicsWorld.stepSimulation(deltaTime);
+
+                // 更新物体位置
+                for (var i = 0, iL = this._rigidBodies.length; i < iL; i++) {
+                    var objThree = this._rigidBodies[i];
+                    var objPhys = objThree.userData.physicsBody;
+                    var ms = objPhys.getMotionState();
+                    if (ms) {
+                        ms.getWorldTransform(transformAux1);
+                        var p = transformAux1.getOrigin();
+                        var q = transformAux1.getRotation();
+                        objThree.position.set(p.x(), p.y(), p.z());
+                        objThree.quaternion.set(q.x(), q.y(), q.z(), q.w());
+                    }
+                }
+            }
+        }]);
+        return PhysicsWorld;
+    }();
+
+    exports.PhysicsWorld = PhysicsWorld;
 });
 
 /***/ })

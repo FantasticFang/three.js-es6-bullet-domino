@@ -22,6 +22,10 @@ class Renderer {
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = PCFSoftShadowMap;
     }
+
+    render(scene3D) {
+        this.renderer.render(scene3D.scene, scene3D.camera);
+    }
 }
 
 export { Renderer };

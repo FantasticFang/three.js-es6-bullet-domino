@@ -2,7 +2,7 @@ import { AmbientLight, DirectionalLight, Vector3 } from 'three';
 
 class Light {
     constructor(scene, dirLightConfig) {
-        let color = 0xfffff;
+        let color = 0xffffff;
         let intensity = 1;
 
         this.ambientLight = new AmbientLight(color, intensity);
