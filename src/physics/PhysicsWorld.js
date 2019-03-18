@@ -2,9 +2,7 @@
 /**
  * 将物理引擎封装成一个物理场景
  */
-import { Mesh, BoxGeometry } from 'three';
-
-let margin = 0.05;
+const margin = 0.05;
 let transformAux1 = new Ammo.btTransform();
 
 class PhysicsWorld {
@@ -34,12 +32,10 @@ class PhysicsWorld {
      * @param { Object } threeObj 场景中的obj
      * @param { Ammo.btBoxShape } physicsShp 传入物理面
      * @param { number } mass 质量
-     * @param {*} pos 物理
-     * @param {*} quat 旋转四元数
      */
-    _createRigidBody(threeObject, physicsShape, mass, pos, quat) {
-        threeObject.position.copy(pos);
-        threeObject.quaternion.copy(quat);
+    _createRigidBody(threeObj, physicsShape, mass) {
+        let pos = threeObj.position;
+        let quat = threeObj.quaternion;
 
         let transform = new Ammo.btTransform();
         transform.setIdentity();
@@ -53,14 +49,12 @@ class PhysicsWorld {
         let rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, motionState, physicsShape, localInertia);
         let body = new Ammo.btRigidBody(rbInfo);
 
-        threeObject.userData.physicsBody = body;
+        threeObj.userData.physicsBody = body;
 
         if (mass > 0) {
-            this._rigidBodies.push(threeObject);
+            this._rigidBodies.push(threeObj);
 
-            // Disable deactivation
             // 防止物体弹力过快消失
-
             // Ammo.DISABLE_DEACTIVATION = 4
             body.setActivationState(4);
         }
@@ -70,14 +64,35 @@ class PhysicsWorld {
         return body;
     }
 
-    createTmpObj(sx, sy, sz, mass, pos, quat, material) {
-        let threeObject = new Mesh(new BoxGeometry(sx, sy, sz, 1, 1, 1), material);
-        let shape = new Ammo.btBoxShape(new Ammo.btVector3(sx * 0.5, sy * 0.5, sz * 0.5));
+    /**
+     * 根据three中mesh类型生成刚体
+     * 1. 这里的简单的box，sphere可以根据其本身的height、radius等计算出刚体的形状
+     * 2. 对于复杂的物体来说，就要传入点阵，或者高度阵（不同引擎库不同，connon.js是用的triMesh可以生成复杂的地面刚体）
+     *
+     * @param {THREE.Mesh} threeObj
+     * @param {string} type
+     * @param {number} mass
+     */
+    addSimpleObj(threeObj, type, mass) {
+        let shape = null;
+        let params = null;
+
+        switch (type) {
+            case 'box':
+                params = threeObj.geometry.parameters;
+                shape = new Ammo.btBoxShape(new Ammo.btVector3(params.width * 0.5, params.height * 0.5, params.depth * 0.5));
+                break;
+            case 'sphere':
+                params = threeObj.geometry.parameters.radius;
+                shape = new Ammo.btSphereShape(params);
+                break;
+        }
+
         shape.setMargin(margin);
 
-        this._createRigidBody(threeObject, shape, mass, pos, quat);
+        this._createRigidBody(threeObj, shape, mass);
 
-        return threeObject;
+        return threeObj;
     }
 
     update(deltaTime) {

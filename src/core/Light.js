@@ -9,7 +9,7 @@ class Light {
         scene.add(this.ambientLight);
 
         // set directional light params
-        let pos = new Vector3(0, 100, 0);
+        let pos = new Vector3(0, 20, 0);
         let targetPos = new Vector3(0, 0, 0);
         if (dirLightConfig) {
             pos.copy(dirLightConfig.pos);

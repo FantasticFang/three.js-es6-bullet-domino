@@ -49260,6 +49260,8 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
         function Controller(camera, renderDom) {
             (0, _classCallCheck3.default)(this, Controller);
 
+            this._camera = camera;
+
             this._orbit = new _OrbitControls.OrbitControls(camera, renderDom);
         }
 
@@ -49320,7 +49322,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
                         scene.add(this.ambientLight);
 
                         // set directional light params
-                        var pos = new _three.Vector3(0, 100, 0);
+                        var pos = new _three.Vector3(0, 20, 0);
                         var targetPos = new _three.Vector3(0, 0, 0);
                         if (dirLightConfig) {
                                 pos.copy(dirLightConfig.pos);
@@ -49416,9 +49418,10 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
                 antialias: true
             });
 
+            this._setShadow(true);
+
             this.resize(dom.clientWidth, dom.clientHeight);
 
-            this.renderer.autoClear = false;
             this.renderer.setClearColor('#000000');
 
             dom.appendChild(this.renderer.domElement);
@@ -49431,8 +49434,8 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
             }
         }, {
             key: '_setShadow',
-            value: function _setShadow() {
-                this.renderer.shadowMap.enabled = true;
+            value: function _setShadow(falg) {
+                this.renderer.shadowMap.enabled = falg;
                 this.renderer.shadowMap.type = _three.PCFSoftShadowMap;
             }
         }, {
@@ -49490,26 +49493,27 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
             this._camera = null;
             this._light = null;
 
-            this._world = null;
-
-            this._initlize();
+            this._initialize();
             this._test();
         }
 
         (0, _createClass3.default)(Scene3D, [{
-            key: '_initlize',
-            value: function _initlize() {
+            key: '_initialize',
+            value: function _initialize() {
                 this._light = new _Light.Light(this.scene);
 
                 this._world = new _PhysicsWorld.PhysicsWorld();
 
                 this._camera = new _Camera3d.Camera3D('camera3d', 45, window.innerWidth / window.innerHeight);
                 this._camera.setAttribute(new _three.Vector3(20, 20, 0), new _three.Vector3(0, 0, 0));
-                this.scene.add(this.camera);
+
+                this.scene.background = new _three.TextureLoader().load('assets/picture/grey-background.jpg');
             }
         }, {
-            key: '_test',
-            value: function _test() {
+            key: '_testDomino',
+            value: function _testDomino() {
+                var _this = this;
+
                 var map = new _three.TextureLoader().load('assets/picture/grid.png');
                 map.wrapS = _three.RepeatWrapping;
                 map.wrapT = _three.RepeatWrapping;
@@ -49521,27 +49525,58 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
                 // 创建地面
                 pos.set(0, -0.5, 0);
                 quat.set(0, 0, 0, 1);
-                var ground = this._world.createTmpObj(400, 1, 400, 0, pos, quat, new _three.MeshBasicMaterial());
-                ground.castShadow = true;
+                var ground = new _three.Mesh(new _three.BoxGeometry(400, 1, 400, 1, 1, 1), new _three.MeshBasicMaterial({ map: map }));
                 ground.receiveShadow = true;
-                ground.material.map = map;
+                ground.position.copy(pos);
+                ground.quaternion.copy(quat);
+
+                this._world.addSimpleObj(ground, 'box', 0);
 
                 this.scene.add(ground);
 
-                function createRendomColorObjectMeatrial() {
-                    var color = Math.floor(Math.random() * (1 << 24));
-                    return new _three.MeshPhongMaterial({ color: color });
-                }
-
                 var mesh = void 0;
+                var mat = [new _three.MeshPhongMaterial({ map: new _three.TextureLoader().load('assets/picture/domino.jpg') }), new _three.MeshPhongMaterial({ map: new _three.TextureLoader().load('assets/picture/domino2.jpg') })];
                 // 随机创建30个箱子
+
+                var tmpArr = [];
                 for (var i = 0; i < 30; i++) {
-                    pos.set(Math.random(), 2 * i, Math.random());
+                    pos.set(0.5, 1, i * 2);
                     quat.set(0, 0, 0, 1);
 
-                    mesh = this._world.createTmpObj(1, 1, 1, 0.5, pos, quat, createRendomColorObjectMeatrial());
+                    mesh = new _three.Mesh(new _three.BoxGeometry(1, 3, 0.5, 1, 1, 1), mat[i % 2]);
+                    mesh.position.copy(pos);
+                    mesh.quaternion.copy(quat);
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = true;
+
+                    this._world.addSimpleObj(mesh, 'box', 1);
                     this.scene.add(mesh);
+                    tmpArr.push(mesh);
                 }
+
+                this._addRaycaster(tmpArr, function (intersect) {
+                    mesh = intersect.object; // FIXME：ammo.js的文档太少，这里不知道如何改变已有刚体的动量
+                    mesh.position.z += 0.4;
+                    mesh.quaternion.set(0.3, 0, 0, 1);
+                    _this._world.addSimpleObj(mesh, 'box', 2);
+                });
+            }
+        }, {
+            key: '_addRaycaster',
+            value: function _addRaycaster(objects, callback) {
+                var scope = this;
+                window.addEventListener('dblclick', function (event) {
+                    var raycaster = new _three.Raycaster();
+                    var mouseCoords = new _three.Vector2();
+
+                    mouseCoords.set(event.clientX / window.innerWidth * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
+
+                    raycaster.setFromCamera(mouseCoords, scope.camera);
+                    var intersects = raycaster.intersectObjects(objects, true);
+                    if (intersects.length && callback) {
+                        callback(intersects[0]);
+                    }
+                }, false);
             }
         }, {
             key: 'update',
@@ -49699,12 +49734,12 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
     if (true) {
-        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(/*! babel-runtime/helpers/classCallCheck */ "./node_modules/babel-runtime/helpers/classCallCheck.js"), __webpack_require__(/*! babel-runtime/helpers/createClass */ "./node_modules/babel-runtime/helpers/createClass.js"), __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js")], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(/*! babel-runtime/helpers/classCallCheck */ "./node_modules/babel-runtime/helpers/classCallCheck.js"), __webpack_require__(/*! babel-runtime/helpers/createClass */ "./node_modules/babel-runtime/helpers/createClass.js")], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
     } else { var mod; }
-})(this, function (exports, _classCallCheck2, _createClass2, _three) {
+})(this, function (exports, _classCallCheck2, _createClass2) {
     'use strict';
 
     Object.defineProperty(exports, "__esModule", {
@@ -49722,11 +49757,11 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
         };
     }
 
-    var margin = 0.05; /* eslint-disable */
+    /* eslint-disable */
     /**
      * 将物理引擎封装成一个物理场景
      */
-
+    var margin = 0.05;
     var transformAux1 = new Ammo.btTransform();
 
     var PhysicsWorld = function () {
@@ -49755,9 +49790,9 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
             }
         }, {
             key: '_createRigidBody',
-            value: function _createRigidBody(threeObject, physicsShape, mass, pos, quat) {
-                threeObject.position.copy(pos);
-                threeObject.quaternion.copy(quat);
+            value: function _createRigidBody(threeObj, physicsShape, mass) {
+                var pos = threeObj.position;
+                var quat = threeObj.quaternion;
 
                 var transform = new Ammo.btTransform();
                 transform.setIdentity();
@@ -49771,14 +49806,12 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
                 var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, motionState, physicsShape, localInertia);
                 var body = new Ammo.btRigidBody(rbInfo);
 
-                threeObject.userData.physicsBody = body;
+                threeObj.userData.physicsBody = body;
 
                 if (mass > 0) {
-                    this._rigidBodies.push(threeObject);
+                    this._rigidBodies.push(threeObj);
 
-                    // Disable deactivation
                     // 防止物体弹力过快消失
-
                     // Ammo.DISABLE_DEACTIVATION = 4
                     body.setActivationState(4);
                 }
@@ -49788,15 +49821,27 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
                 return body;
             }
         }, {
-            key: 'createTmpObj',
-            value: function createTmpObj(sx, sy, sz, mass, pos, quat, material) {
-                var threeObject = new _three.Mesh(new _three.BoxGeometry(sx, sy, sz, 1, 1, 1), material);
-                var shape = new Ammo.btBoxShape(new Ammo.btVector3(sx * 0.5, sy * 0.5, sz * 0.5));
+            key: 'addSimpleObj',
+            value: function addSimpleObj(threeObj, type, mass) {
+                var shape = null;
+                var params = null;
+
+                switch (type) {
+                    case 'box':
+                        params = threeObj.geometry.parameters;
+                        shape = new Ammo.btBoxShape(new Ammo.btVector3(params.width * 0.5, params.height * 0.5, params.depth * 0.5));
+                        break;
+                    case 'sphere':
+                        params = threeObj.geometry.parameters.radius;
+                        shape = new Ammo.btSphereShape(params);
+                        break;
+                }
+
                 shape.setMargin(margin);
 
-                this._createRigidBody(threeObject, shape, mass, pos, quat);
+                this._createRigidBody(threeObj, shape, mass);
 
-                return threeObject;
+                return threeObj;
             }
         }, {
             key: 'update',

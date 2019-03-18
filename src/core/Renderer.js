@@ -6,9 +6,10 @@ class Renderer {
             antialias: true
         });
 
+        this._setShadow(true);
+
         this.resize(dom.clientWidth, dom.clientHeight);
 
-        this.renderer.autoClear = false;
         this.renderer.setClearColor('#000000');
 
         dom.appendChild(this.renderer.domElement);
@@ -18,8 +19,8 @@ class Renderer {
         this.renderer.setSize(w, h);
     }
 
-    _setShadow() {
-        this.renderer.shadowMap.enabled = true;
+    _setShadow(falg) {
+        this.renderer.shadowMap.enabled = falg;
         this.renderer.shadowMap.type = PCFSoftShadowMap;
     }
 
