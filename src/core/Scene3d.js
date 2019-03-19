@@ -1,4 +1,4 @@
-import { Scene, MeshBasicMaterial, MeshPhongMaterial, Quaternion, Vector3, TextureLoader, RepeatWrapping, Mesh, BoxGeometry, Raycaster, Vector2 } from 'three';
+import { Scene, MeshPhongMaterial, Quaternion, Vector3, TextureLoader, RepeatWrapping, Mesh, BoxGeometry, Raycaster, Vector2 } from 'three';
 import { Camera3D } from './Camera3d';
 import { Light } from './Light';
 
@@ -12,7 +12,7 @@ class Scene3D {
         this._light = null;
 
         this._initialize();
-        this._test();
+        this._testDomino();
     }
 
     _initialize() {
@@ -38,7 +38,7 @@ class Scene3D {
         // 创建地面
         pos.set(0, -0.5, 0);
         quat.set(0, 0, 0, 1);
-        let ground = new Mesh(new BoxGeometry(400, 1, 400, 1, 1, 1), new MeshBasicMaterial({ map: map }));
+        let ground = new Mesh(new BoxGeometry(400, 1, 400, 1, 1, 1), new MeshPhongMaterial({ map: map }));
         ground.receiveShadow = true;
         ground.position.copy(pos);
         ground.quaternion.copy(quat);
@@ -50,11 +50,10 @@ class Scene3D {
         let mesh;
         let mat = [new MeshPhongMaterial({ map: new TextureLoader().load('assets/picture/domino.jpg') }),
             new MeshPhongMaterial({ map: new TextureLoader().load('assets/picture/domino2.jpg') })];
-        // 随机创建30个箱子
 
         let tmpArr = [];
-        for (let i = 0; i < 30; i++) {
-            pos.set(0.5, 1, i * 2);
+        for (let i = 0; i < 50; i++) {
+            pos.set(0, 2, -50 + i * 2);
             quat.set(0, 0, 0, 1);
 
             mesh = new Mesh(new BoxGeometry(1, 3, 0.5, 1, 1, 1), mat[i % 2]);
@@ -68,8 +67,68 @@ class Scene3D {
             tmpArr.push(mesh);
         }
 
+        pos.set(-0.5, 2, 49);
+        quat.set(0, Math.PI / 2, 0, 1);
+
+        for (let i = 1; i < 50; i++) {
+            mesh = new Mesh(new BoxGeometry(1, 3, 0.5, 1, 1, 1), mat[i % 2]);
+            mesh.position.copy(pos);
+            mesh.quaternion.copy(quat);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            pos.set(-i * 2, 2, 49);
+            quat.set(0, Math.PI / 3, 0, 1);
+
+            this._world.addSimpleObj(mesh, 'box', 1);
+            this.scene.add(mesh);
+            tmpArr.push(mesh);
+        }
+
+        pos.set(-97.5, 2, 48);
+        quat.set(0, Math.PI / 6, 0, 1);
+
+        for (let i = 1; i < 50; i++) {
+            mesh = new Mesh(new BoxGeometry(1, 3, 0.5, 1, 1, 1), mat[i % 2]);
+            mesh.position.copy(pos);
+            mesh.quaternion.copy(quat);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            pos.set(-98, 2, 49 - 2 * i);
+            quat.set(0, 0, 0, 1);
+
+            this._world.addSimpleObj(mesh, 'box', 1);
+            this.scene.add(mesh);
+            tmpArr.push(mesh);
+        }
+
+
+        pos.set(-97, 2, -49);
+        quat.set(0, Math.PI / 2, 0, 1);
+
+        for (let i = 1; i < 50; i++) {
+            mesh = new Mesh(new BoxGeometry(1, 3, 0.5, 1, 1, 1), mat[i % 2]);
+            mesh.position.copy(pos);
+            mesh.quaternion.copy(quat);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            pos.set(-98 + 2 * i, 2, -49);
+            quat.set(0, Math.PI / 3, 0, 1);
+
+            this._world.addSimpleObj(mesh, 'box', 1);
+            this.scene.add(mesh);
+            tmpArr.push(mesh);
+        }
+
         this._addRaycaster(tmpArr, (intersect) => {
             mesh = intersect.object; // FIXME：ammo.js的文档太少，这里不知道如何改变已有刚体的动量
+
+            let body = mesh.userData.physicsBody;
+            this._world.remove(body);
+            body = null;
+
             mesh.position.z += 0.4;
             mesh.quaternion.set(0.3, 0, 0, 1);
             this._world.addSimpleObj(mesh, 'box', 2);

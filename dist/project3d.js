@@ -49315,23 +49315,27 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
                 function Light(scene, dirLightConfig) {
                         (0, _classCallCheck3.default)(this, Light);
 
-                        var color = 0xffffff;
+                        var color = 0x404040;
                         var intensity = 1;
 
                         this.ambientLight = new _three.AmbientLight(color, intensity);
                         scene.add(this.ambientLight);
 
                         // set directional light params
-                        var pos = new _three.Vector3(0, 20, 0);
+                        var pos = new _three.Vector3(20, 20, 0);
                         var targetPos = new _three.Vector3(0, 0, 0);
                         if (dirLightConfig) {
                                 pos.copy(dirLightConfig.pos);
                                 targetPos.copy(dirLightConfig.targetPos);
                         }
 
-                        this.directionalLight = this._createDirectionalLight(color, intensity, pos, targetPos);
+                        this.directionalLight = this._createDirectionalLight(0xffffff, 1, pos, targetPos);
                         scene.add(this.directionalLight);
                         scene.add(this.directionalLight.target);
+
+                        // let soptLight = this._createSpotLight(0xffffff, intensity, new Vector3(0, 40, 0), targetPos);
+                        // scene.add(soptLight);
+                        // scene.add(soptLight.target);
                 }
 
                 /**
@@ -49356,18 +49360,37 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
                                 tmpLight.target.position.copy(targetPos);
 
                                 // Set up shadow properties for the light
-                                tmpLight.shadow.camera.far = 200;
+                                tmpLight.shadow.camera.far = 100;
                                 tmpLight.shadow.camera.near = 1;
-                                tmpLight.shadow.camera.left = -200 * shadowSize;
-                                tmpLight.shadow.camera.right = 200 * shadowSize;
-                                tmpLight.shadow.camera.bottom = -200 * shadowSize;
-                                tmpLight.shadow.camera.top = 200 * shadowSize;
+                                tmpLight.shadow.camera.left = -100 * shadowSize;
+                                tmpLight.shadow.camera.right = 100 * shadowSize;
+                                tmpLight.shadow.camera.bottom = -100 * shadowSize;
+                                tmpLight.shadow.camera.top = 100 * shadowSize;
                                 tmpLight.shadow.mapSize.width = 2048;
                                 tmpLight.shadow.mapSize.height = 2048;
 
                                 tmpLight.name = 'directionalLight';
 
                                 return tmpLight;
+                        }
+                }, {
+                        key: '_createSpotLight',
+                        value: function _createSpotLight(color, intensity, pos, targetPos) {
+                                var spotLight = new _three.SpotLight(color, intensity);
+                                spotLight.position.copy(pos);
+                                spotLight.target.position.copy(targetPos);
+
+                                spotLight.angle = Math.PI / 4;
+                                spotLight.penumbra = 0.05;
+                                spotLight.decay = 2;
+                                spotLight.distance = 200;
+                                spotLight.castShadow = true;
+                                spotLight.shadow.mapSize.width = 2048;
+                                spotLight.shadow.mapSize.height = 2048;
+                                spotLight.shadow.camera.near = 10;
+                                spotLight.shadow.camera.far = 200;
+
+                                return spotLight;
                         }
                 }]);
                 return Light;
@@ -49434,8 +49457,8 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
             }
         }, {
             key: '_setShadow',
-            value: function _setShadow(falg) {
-                this.renderer.shadowMap.enabled = falg;
+            value: function _setShadow(flag) {
+                this.renderer.shadowMap.enabled = flag;
                 this.renderer.shadowMap.type = _three.PCFSoftShadowMap;
             }
         }, {
@@ -49494,7 +49517,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
             this._light = null;
 
             this._initialize();
-            this._test();
+            this._testDomino();
         }
 
         (0, _createClass3.default)(Scene3D, [{
@@ -49525,7 +49548,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
                 // 创建地面
                 pos.set(0, -0.5, 0);
                 quat.set(0, 0, 0, 1);
-                var ground = new _three.Mesh(new _three.BoxGeometry(400, 1, 400, 1, 1, 1), new _three.MeshBasicMaterial({ map: map }));
+                var ground = new _three.Mesh(new _three.BoxGeometry(400, 1, 400, 1, 1, 1), new _three.MeshPhongMaterial({ map: map }));
                 ground.receiveShadow = true;
                 ground.position.copy(pos);
                 ground.quaternion.copy(quat);
@@ -49536,11 +49559,10 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
                 var mesh = void 0;
                 var mat = [new _three.MeshPhongMaterial({ map: new _three.TextureLoader().load('assets/picture/domino.jpg') }), new _three.MeshPhongMaterial({ map: new _three.TextureLoader().load('assets/picture/domino2.jpg') })];
-                // 随机创建30个箱子
 
                 var tmpArr = [];
-                for (var i = 0; i < 30; i++) {
-                    pos.set(0.5, 1, i * 2);
+                for (var i = 0; i < 50; i++) {
+                    pos.set(0, 2, -50 + i * 2);
                     quat.set(0, 0, 0, 1);
 
                     mesh = new _three.Mesh(new _three.BoxGeometry(1, 3, 0.5, 1, 1, 1), mat[i % 2]);
@@ -49554,8 +49576,67 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
                     tmpArr.push(mesh);
                 }
 
+                pos.set(-0.5, 2, 49);
+                quat.set(0, Math.PI / 2, 0, 1);
+
+                for (var _i = 1; _i < 50; _i++) {
+                    mesh = new _three.Mesh(new _three.BoxGeometry(1, 3, 0.5, 1, 1, 1), mat[_i % 2]);
+                    mesh.position.copy(pos);
+                    mesh.quaternion.copy(quat);
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = true;
+
+                    pos.set(-_i * 2, 2, 49);
+                    quat.set(0, Math.PI / 3, 0, 1);
+
+                    this._world.addSimpleObj(mesh, 'box', 1);
+                    this.scene.add(mesh);
+                    tmpArr.push(mesh);
+                }
+
+                pos.set(-97.5, 2, 48);
+                quat.set(0, Math.PI / 6, 0, 1);
+
+                for (var _i2 = 1; _i2 < 50; _i2++) {
+                    mesh = new _three.Mesh(new _three.BoxGeometry(1, 3, 0.5, 1, 1, 1), mat[_i2 % 2]);
+                    mesh.position.copy(pos);
+                    mesh.quaternion.copy(quat);
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = true;
+
+                    pos.set(-98, 2, 49 - 2 * _i2);
+                    quat.set(0, 0, 0, 1);
+
+                    this._world.addSimpleObj(mesh, 'box', 1);
+                    this.scene.add(mesh);
+                    tmpArr.push(mesh);
+                }
+
+                pos.set(-97, 2, -49);
+                quat.set(0, Math.PI / 2, 0, 1);
+
+                for (var _i3 = 1; _i3 < 50; _i3++) {
+                    mesh = new _three.Mesh(new _three.BoxGeometry(1, 3, 0.5, 1, 1, 1), mat[_i3 % 2]);
+                    mesh.position.copy(pos);
+                    mesh.quaternion.copy(quat);
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = true;
+
+                    pos.set(-98 + 2 * _i3, 2, -49);
+                    quat.set(0, Math.PI / 3, 0, 1);
+
+                    this._world.addSimpleObj(mesh, 'box', 1);
+                    this.scene.add(mesh);
+                    tmpArr.push(mesh);
+                }
+
                 this._addRaycaster(tmpArr, function (intersect) {
                     mesh = intersect.object; // FIXME：ammo.js的文档太少，这里不知道如何改变已有刚体的动量
+
+                    var body = mesh.userData.physicsBody;
+                    _this._world.remove(body);
+                    body = null;
+
                     mesh.position.z += 0.4;
                     mesh.quaternion.set(0.3, 0, 0, 1);
                     _this._world.addSimpleObj(mesh, 'box', 2);
@@ -49819,6 +49900,11 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
                 this._physicsWorld.addRigidBody(body);
 
                 return body;
+            }
+        }, {
+            key: 'remove',
+            value: function remove(body) {
+                this._physicsWorld.removeRigidBody(body);
             }
         }, {
             key: 'addSimpleObj',

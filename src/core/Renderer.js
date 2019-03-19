@@ -19,8 +19,8 @@ class Renderer {
         this.renderer.setSize(w, h);
     }
 
-    _setShadow(falg) {
-        this.renderer.shadowMap.enabled = falg;
+    _setShadow(flag) {
+        this.renderer.shadowMap.enabled = flag;
         this.renderer.shadowMap.type = PCFSoftShadowMap;
     }
 

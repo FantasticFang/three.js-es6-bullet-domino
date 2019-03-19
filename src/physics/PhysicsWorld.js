@@ -64,6 +64,10 @@ class PhysicsWorld {
         return body;
     }
 
+    remove(body){
+        this._physicsWorld.removeRigidBody(body);
+    }
+
     /**
      * 根据three中mesh类型生成刚体
      * 1. 这里的简单的box，sphere可以根据其本身的height、radius等计算出刚体的形状
