@@ -104,7 +104,7 @@ class Scene3D {
         }
 
 
-        pos.set(-97, 2, -49);
+        pos.set(-97.5, 2, -48.5);
         quat.set(0, Math.PI / 2, 0, 1);
 
         for (let i = 1; i < 50; i++) {

@@ -49612,7 +49612,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
                     tmpArr.push(mesh);
                 }
 
-                pos.set(-97, 2, -49);
+                pos.set(-97.5, 2, -48.5);
                 quat.set(0, Math.PI / 2, 0, 1);
 
                 for (var _i3 = 1; _i3 < 50; _i3++) {
