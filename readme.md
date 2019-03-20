@@ -3,7 +3,7 @@
 * 用ES6搭建了一个小框架
 * three.js基本场景的构建
 * 基于bullet封装了一个物理世界
-* 基于ES6，封装three.js的基本场景、控制器等
+* 基于ES6，封装three.js的基本场景、灯光、相机、控制器等
 
 
 # Domino
