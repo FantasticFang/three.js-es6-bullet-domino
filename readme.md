@@ -1,10 +1,9 @@
-# ES6-THREE.JS
+# 要点
 
-* This is about how to build a scene using ES6 and some tools 
-* use npm install
-* We need webpack and babel to build, package.json is about what is installed
-* We need eslint to formalize coding
-
+* 用ES6搭建了一个小框架
+* three.js基本场景的构建
+* 基于bullet物理世界的构建
+* three.js的ES6构建形式
 
 
 # Domino
